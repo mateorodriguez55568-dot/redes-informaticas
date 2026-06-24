@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redes Informáticas — Guía Visual Interactiva</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050810;
+  --bg-2: #0a0f1c;
+  --surface: #0f1525;
+  --surface-2: #141b2e;
+  --border: rgba(0, 212, 255, 0.15);
+  --border-bright: rgba(0, 212, 255, 0.4);
+  --fg: #e6edf7;
+  --muted: #8a96b0;
+  --accent: #00d4ff;
+  --accent-2: #0066ff;
+  --accent-3: #00ffa3;
+  --warn: #ff6b9d;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  margin: 0;
+  overflow-x: hidden;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.font-display { font-family: 'Space Grotesk', sans-serif; }
+
+/* Background grid */
+.bg-grid {
+  background-image: 
+    linear-gradient(rgba(0, 212, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Nav */
+.nav-blur {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(5, 8, 16, 0.75);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Card */
+.card {
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  border: 1px solid var(--border);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.card:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px -20px rgba(0, 212, 255, 0.3);
+}
+.card:hover::before { opacity: 1; }
+
+/* Reveal Scroll Effect */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animations */
+@keyframes dash-flow { to { stroke-dashoffset: -24; } }
+@keyframes signal-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+@keyframes float-y { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes game-pulse {
+  0%, 100% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.4), inset 0 1px 0 rgba(255,255,255,0.3); }
+  50% { box-shadow: 0 0 50px rgba(0, 212, 255, 0.6), inset 0 1px 0 rgba(255,255,255,0.4); }
+}
+
+.flow-line {
+  stroke-dasharray: 6 6;
+  animation: dash-flow 1.2s linear infinite;
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  color: #001020;
+  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+  padding: 16px 36px;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+  text-decoration: none;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 50px rgba(0, 212, 255, 0.65), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: left 0.7s;
+}
+.btn-primary:hover::after { left: 100%; }
+
+.btn-secondary {
+  background: rgba(0, 212, 255, 0.05);
+  color: var(--accent);
+  border: 1px solid var(--border-bright);
+  padding: 15px 32px;
+  border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  text-decoration: none;
+}
+.btn-secondary:hover {
+  background: rgba(0, 212, 255, 0.12);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.btn-game { animation: game-pulse 2.5s ease-in-out infinite; }
+
+/* Section tag */
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.section-tag::before {
+  content: '';
+  width: 30px;
+  height: 1px;
+  background: var(--accent);
+}
+
+/* Table */
+.compare-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-size: 14px;
+}
+.compare-table th, .compare-table td {
+  padding: 18px 22px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.compare-table th {
+  background: var(--surface-2);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.compare-table tbody tr { transition: background 0.3s; }
+.compare-table tbody tr:hover { background: rgba(0, 212, 255, 0.05); }
+
+/* Game CTA */
+.game-cta {
+  background: 
+    radial-gradient(circle at 15% 30%, rgba(0, 212, 255, 0.15), transparent 50%),
+    radial-gradient(circle at 85% 70%, rgba(0, 102, 255, 0.15), transparent 50%),
+    linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+  border: 1px solid var(--border-bright);
+  border-radius: 24px;
+}
+
+#network-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+.diagram-container {
+  background: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.05), transparent 70%), var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  position: relative;
+}
+
+.nav-link {
+  color: var(--muted);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  transition: color 0.3s;
+  text-decoration: none;
+}
+.nav-link:hover { color: var(--fg); }
+
+.component-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid var(--border);
+  margin-bottom: 18px;
+  color: var(--accent);
+  transition: all 0.3s;
+}
+.card:hover .component-icon {
+  background: rgba(0, 212, 255, 0.18);
+  border-color: var(--accent);
+  transform: scale(1.05) rotate(-3deg);
+}
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-2); }
+::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 212, 255, 0.4); }
+</style>
+</head>
+<body>
+   
+<nav class="fixed top-0 left-0 right-0 z-50 nav-blur">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="#hero" class="flex items-center gap-3 group">
+      <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 0 20px rgba(0,212,255,0.4);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#001020" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/>
+          <path d="M12 7v4M12 11l-5 6M12 11l5 6"/>
+        </svg>
+      </div>
+      <div class="font-display font-bold text-lg tracking-tight">Redes<span style="color: var(--accent);">.IO</span></div>
+    </a>
+    
+    <div class="nav-links hidden lg:flex items-center gap-6">
+      <a href="#que-es" class="nav-link">¿Qué es?</a>
+      <a href="#componentes" class="nav-link">Componentes</a>
+      <a href="#lan" class="nav-link">LAN</a>
+      <a href="#wan" class="nav-link">WAN</a>
+      <a href="#pan" class="nav-link">PAN</a>
+      <a href="#wifi" class="nav-link">WiFi</a>
+      <a href="#comparacion" class="nav-link">Comparación</a>
+    </div>
+
+    <a href="#juego" class="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-lg font-display font-semibold text-sm" style="background: rgba(0, 212, 255, 0.1); border: 1px solid var(--border-bright); color: var(--accent); text-decoration: none;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Mini Juego
+    </a>
+  </div>
+</nav>
+
+<section id="hero" class="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden">
+  <div class="absolute inset-0 bg-grid opacity-60"></div>
+  <canvas id="network-canvas"></canvas>
+  <div class="orb" style="width: 500px; height: 500px; background: var(--accent); top: -100px; right: -100px;"></div>
+  <div class="orb" style="width: 400px; height: 400px; background: var(--accent-2); bottom: -50px; left: -50px;"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-12 items-center w-full">
+    <div class="lg:col-span-7">
+      <div class="chip mb-6">
+        <span class="w-2 h-2 rounded-full" style="background: var(--accent-3); box-shadow: 0 0 10px var(--accent-3); animation: signal-pulse 1.5s infinite;"></span>
+        GUÍA INTERACTIVA · MULTINIVEL
+      </div>
+      <h1 class="font-display font-bold text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[0.95] mb-6">
+        Redes<br>
+        <span style="background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Informáticas</span>
+      </h1>
+      <p class="text-lg lg:text-xl mb-8 max-w-2xl" style="color: var(--muted);">
+        Las redes informáticas permiten conectar dispositivos para compartir información, recursos y servicios. Descubre cómo funcionan LAN, WAN, PAN y WiFi en esta guía visual.
+      </p>
+      <div class="flex flex-wrap items-center gap-4">
+        <a href="#que-es" class="btn-primary">
+          Comenzar a aprender
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="#juego" class="btn-secondary">
+          Probar el juego
+        </a>
+      </div>
+    </div>
+
+    <div class="lg:col-span-5 hidden lg:block">
+      <div class="diagram-container">
+        <div class="relative z-10 flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <div class="font-mono text-xs" style="color: var(--muted);">// live_network.status</div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full" style="background: var(--accent-3); animation: signal-pulse 1s infinite;"></span>
+              <span class="font-mono text-xs" style="color: var(--accent-3);">ONLINE</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="rounded-lg p-4 bg-[rgba(0,212,255,0.03)] border border-[var(--border)]">
+              <div class="font-mono text-xs text-[var(--muted)]">NODOS</div>
+              <div class="font-display font-bold text-3xl text-[var(--accent)]" id="stat-nodes">32</div>
+            </div>
+            <div class="rounded-lg p-4 bg-[rgba(0,212,255,0.03)] border border-[var(--border)]">
+              <div class="font-mono text-xs text-[var(--muted)]">ENLACES</div>
+              <div class="font-display font-bold text-3xl text-[var(--accent)]" id="stat-edges">64</div>
+            </div>
+            <div class="rounded-lg p-4 bg-[rgba(0,212,255,0.03)] border border-[var(--border)]">
+              <div class="font-mono text-xs text-[var(--muted)]">PAQUETES/S</div>
+              <div class="font-display font-bold text-3xl text-[var(--accent)]" id="stat-packets">145</div>
+            </div>
+            <div class="rounded-lg p-4 bg-[rgba(0,212,255,0.03)] border border-[var(--border)]">
+              <div class="font-mono text-xs text-[var(--muted)]">LATENCIA</div>
+              <div class="font-display font-bold text-3xl text-[var(--accent-3)]" id="stat-latency">14ms</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section id="que-es" class="py-24 relative">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-5 reveal">
+        <div class="section-tag">01 / Definición</div>
+        <h2 class="font-display font-bold text-4xl lg:text-5xl mb-6">
+          ¿Qué es una<br>
+          <span style="color: var(--accent);">Red Informática?</span>
+        </h2>
+        <p class="text-lg mb-6" style="color: var(--muted);">
+          Es un conjunto de dispositivos electrónicos conectados entre sí con el objetivo de intercambiar información y compartir recursos. Los dispositivos pueden comunicarse mediante cables o de forma inalámbrica.
+        </p>
+      </div>
+
+      <div class="lg:col-span-7 reveal">
+        <h3 class="font-display font-bold text-2xl mb-6 text-[var(--accent-3)]">// Beneficios clave</h3>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="card p-5 flex gap-4 items-start">
+            <div class="text-[var(--accent)] font-mono font-bold">01</div>
+            <p class="text-sm">Compartir información rápidamente a cualquier escala.</p>
+          </div>
+          <div class="card p-5 flex gap-4 items-start">
+            <div class="text-[var(--accent)] font-mono font-bold">02</div>
+            <p class="text-sm">Compartir impresoras y otros dispositivos de hardware periféricos.</p>
+          </div>
+          <div class="card p-5 flex gap-4 items-start">
+            <div class="text-[var(--accent)] font-mono font-bold">03</div>
+            <p class="text-sm">Acceder a Internet de manera centralizada y fluida.</p>
+          </div>
+          <div class="card p-5 flex gap-4 items-start">
+            <div class="text-[var(--accent)] font-mono font-bold">04</div>
+            <p class="text-sm">Facilitar la comunicación instantánea entre usuarios del sistema.</p>
+          </div>
+          <div class="card p-5 sm:col-span-2 flex gap-4 items-start">
+            <div class="text-[var(--accent-3)] font-mono font-bold">05</div>
+            <p class="text-sm">Optimizar costos reduciendo drásticamente la inversión en infraestructura aislada.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section id="componentes" class="py-24 relative">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16 reveal">
+      <div class="section-tag" style="justify-content: center;">02 / Infraestructura</div>
+      <h2 class="font-display font-bold text-4xl lg:text-5xl">Conformación de una <span style="color: var(--accent);">Red</span></h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+      <div class="card p-6">
+        <div class="component-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21 stream"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-2">Computadoras</h3>
+        <p class="text-sm" style="color: var(--muted);">Son los dispositivos terminales encargados de enviar y recibir información de manera activa dentro del entorno de red.</p>
+      </div>
+
+      <div class="card p-6">
+        <div class="component-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-2">Servidor</h3>
+        <p class="text-sm" style="color: var(--muted);">Computadora de alta gama especializada en proporcionar bases de datos, servicios dedicados y recursos críticos a otros equipos.</p>
+      </div>
+
+      <div class="card p-6">
+        <div class="component-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-2">Router</h3>
+        <p class="text-sm" style="color: var(--muted);">Dispositivo inteligente que conecta arquitecturas de redes distintas y administra el direccionamiento inteligente de paquetes.</p>
+      </div>
+
+      <div class="card p-6">
+        <div class="component-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-2">Switch</h3>
+        <p class="text-sm" style="color: var(--muted);">Interconecta múltiples dispositivos exclusivamente dentro de un mismo segmento de red local (LAN) con óptima velocidad.</p>
+      </div>
+
+      <div class="card p-6">
+        <div class="component-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1M6 8H5a4 4 0 0 0 0 8h1"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-2">Cables de Red</h3>
+        <p class="text-sm" style="color: var(--muted);">Líneas de transmisión físicas (como cables de cobre trenzado UTP o Fibra Óptica) que transportan datos binarios puros de un nodo a otro.</p>
+      </div>
+
+      <div class="card p-6">
+        <div class="component-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10M12 6a6 6 0 0 1 6 6M12 11a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-2">Punto de Acceso WiFi</h3>
+        <p class="text-sm" style="color: var(--muted);">Antena transceptora que extiende la señal física convirtiéndola en ondas electromagnéticas para conexiones sin cables.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section id="lan" class="py-24 relative bg-grid">
+  <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center reveal">
+    <div>
+      <div class="section-tag">03 / Red de Área Local</div>
+      <h2 class="font-display font-bold text-4xl lg:text-5xl mb-4">Red <span style="color: var(--accent);">LAN</span></h2>
+      <p class="text-lg mb-6" style="color: var(--muted);">
+        <strong class="text-white">Local Area Network:</strong> Conecta dispositivos distribuidos en espacios físicos limitados o reducidos.
+      </p>
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-[var(--surface)] p-3 rounded-lg border border-[var(--border)]"><span class="text-[var(--accent-3)] font-mono">■</span> Alta Velocidad</div>
+        <div class="bg-[var(--surface)] p-3 rounded-lg border border-[var(--border)]"><span class="text-[var(--accent-3)] font-mono">■</span> Bajo Costo</div>
+        <div class="bg-[var(--surface)] p-3 rounded-lg border border-[var(--border)]"><span class="text-[var(--accent-3)] font-mono">■</span> Gestión Simple</div>
+      </div>
+      <p class="text-sm font-mono text-[var(--accent)]">📍 Ejemplo: Red interna de escuelas, casas u oficinas corporativas.</p>
+    </div>
+    <div class="p-6 bg-[var(--surface)] rounded-xl border border-[var(--border)]">
+      <h3 class="font-mono text-sm text-[var(--accent-3)] mb-3">// Entornos de Despliegue:</h3>
+      <ul class="space-y-2 text-sm text-[var(--muted)]">
+        <li>• Casas residenciales compartiendo un módem.</li>
+        <li>• Instituciones educativas interconectando laboratorios.</li>
+        <li>• Oficinas comerciales centralizando archivos en un Switch.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section id="wan" class="py-24 relative">
+  <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center reveal">
+    <div class="order-2 lg:order-1 p-6 bg-[var(--surface)] rounded-xl border border-[var(--border)]">
+      <h3 class="font-mono text-sm text-[var(--accent)] mb-3">// Infraestructura WAN:</h3>
+      <p class="text-sm text-[var(--muted)]">
+        Utiliza satélites, cables transoceánicos y complejos sistemas redundantes de telecomunicaciones globales para canalizar el tráfico masivo de un continente a otro de forma ininterrumpida.
+      </p>
+    </div>
+    <div class="order-1 lg:order-2">
+      <div class="section-tag">04 / Red de Área Amplia</div>
+      <h2 class="font-display font-bold text-4xl lg:text-5xl mb-4">Red <span style="color: var(--accent-2);">WAN</span></h2>
+      <p class="text-lg mb-4" style="color: var(--muted);">
+        <strong class="text-white">Wide Area Network:</strong> Capaz de enlazar múltiples redes LAN geográficamente distantes entre sí.
+      </p>
+      <ul class="space-y-2 text-sm text-[var(--muted)] mb-4">
+        <li>✔ Cobertura territorial masiva (Ciudades/Países).</li>
+        <li>✔ Enlaces de comunicaciones a larga distancia.</li>
+      </ul>
+      <p class="text-sm font-mono text-[var(--accent-3)]">📍 Ejemplo: La red Internet a nivel global.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section id="pan" class="py-24 relative">
+  <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center reveal">
+    <div>
+      <div class="section-tag">05 / Espacio Personal</div>
+      <h2 class="font-display font-bold text-4xl lg:text-5xl mb-4">Red <span style="color: var(--accent-3);">PAN</span></h2>
+      <p class="text-lg mb-4" style="color: var(--muted);">
+        <strong class="text-white">Personal Area Network:</strong> Red enfocada en sincronizar periféricos personales de un solo usuario a corta distancia.
+      </p>
+      <p class="text-sm mb-4 text-[var(--muted)]">
+        Sincroniza y empareja canales de datos optimizados mediante ondas de radio de corto rango como Bluetooth o conexiones físicas USB.
+      </p>
+      <p class="text-sm font-mono text-[var(--accent)]">📍 Ejemplo: Smartwatch o audífonos vinculados al teléfono móvil.</p>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="card p-4 text-center">
+        <div class="text-2xl font-bold text-[var(--accent)]">Fácil</div>
+        <div class="text-xs text-[var(--muted)]">Sincronización</div>
+      </div>
+      <div class="card p-4 text-center">
+        <div class="text-2xl font-bold text-[var(--accent-3)]">Mínimo</div>
+        <div class="text-xs text-[var(--muted)]">Consumo Eléctrico</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section id="wifi" class="py-24 relative">
+  <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center reveal">
+    <div class="p-6 bg-[var(--surface-2)] rounded-xl border border-[var(--border-bright)]">
+      <h3 class="font-mono text-sm text-[var(--accent)] mb-2">Esquema Inalámbrico</h3>
+      <p class="text-xs text-[var(--muted)]">
+        El Router traduce pulsos digitales binarios en frecuencias de ondas de radio (2.4 GHz / 5 GHz) que viajan por el aire hacia las antenas integradas en tus terminales portátiles.
+      </p>
+    </div>
+    <div>
+      <div class="section-tag">06 / Frecuencia Inalámbrica</div>
+      <h2 class="font-display font-bold text-4xl lg:text-5xl mb-4">Tecnología <span style="color: var(--accent);">WiFi</span></h2>
+      <p class="text-lg mb-4" style="color: var(--muted);">
+        Estándar tecnológico de transmisión de datos que elimina por completo el cableado físico estructurado mediante ondas electromagnéticas.
+      </p>
+      <div class="space-y-2 text-sm text-[var(--muted)] mb-4">
+        <p>• <strong>Movilidad Completa:</strong> Desplazamiento libre dentro de la celda de cobertura.</p>
+        <li>• <strong>Instalación Ágil:</strong> Escalabilidad inmediata sin perforaciones de muros.</li>
+      </div>
+      <p class="text-sm font-mono text-[var(--accent-3)]">📍 Ejemplo: Conexión inalámbrica activa de tu hogar o campus escolar.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section id="comparacion" class="py-24 relative">
+  <div class="max-w-7xl mx-auto px-6 reveal">
+    <div class="text-center mb-12">
+      <div class="section-tag" style="justify-content: center;">07 / Métricas</div>
+      <h2 class="font-display font-bold text-4xl lg:text-5xl">Matriz Comparativa de Redes</h2>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Tipo de Red</th>
+            <th>Alcance Operativo</th>
+            <th>Medio de Conexión</th>
+            <th>Ejemplo Práctico</th>
+          </tr>
+        </thead>
+        <tbody class="text-[var(--muted)]">
+          <tr>
+            <td class="font-bold text-white">PAN</td>
+            <td>Pocos metros</td>
+            <td class="font-mono text-xs text-[var(--accent)]">Bluetooth / USB</td>
+            <td>Audífonos Bluetooth emparejados</td>
+          </tr>
+          <tr>
+            <td class="font-bold text-white">LAN</td>
+            <td>Edificio, laboratorio o casa</td>
+            <td class="font-mono text-xs text-[var(--accent)]">Cable UTP / WiFi</td>
+            <td>Red local escolar / Computadoras conectadas</td>
+          </tr>
+          <tr>
+            <td class="font-bold text-white">WiFi</td>
+            <td>Área local extendida</td>
+            <td class="font-mono text-xs text-[var(--accent)]">Inalámbrico (Ondas)</td>
+            <td>Acceso a Internet en el hogar</td>
+          </tr>
+          <tr>
+            <td class="font-bold text-white">WAN</td>
+            <td>Ciudades, países y continentes</td>
+            <td class="font-mono text-xs text-[var(--accent)]">Líneas de Telecomunicación</td>
+            <td>Red Internet global</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-16 text-center max-w-3xl mx-auto">
+      <h3 class="font-display font-bold text-2xl mb-4 text-white">Importancia de las Redes</h3>
+      <p class="text-[var(--muted)] text-base">
+        Las redes informáticas son fundamentales en la actualidad porque permiten compartir información, facilitar la comunicación, acceder a servicios digitales y conectar millones de dispositivos alrededor del mundo. Gracias a ellas podemos estudiar, trabajar, comunicarnos y acceder a información en cuestión de segundos.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section id="juego" class="py-24 max-w-5xl mx-auto px-6 reveal">
+  <div class="game-cta p-8 md:p-12 text-center relative overflow-hidden">
+    <div class="relative z-10">
+      <div class="chip mb-4 mx-auto">
+        <span class="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
+        DESAFÍO COGNITIVO
+      </div>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mb-4 text-white">¡Pon a prueba tus conocimientos!</h2>
+      <p class="text-[var(--muted)] max-w-xl mx-auto mb-8 text-sm md:text-base">
+        Demuestra cuánto aprendiste sobre redes informáticas respondiendo preguntas sobre conceptos clave, topologías LAN, WAN, PAN, WiFi y componentes de infraestructura física.
+      </p>
+      
+      <div class="flex flex-wrap justify-center gap-3 max-w-2xl mx-auto mb-8 font-mono text-xs text-[var(--accent)]">
+        <span class="bg-[rgba(0,0,0,0.3)] px-3 py-1.5 rounded-md border border-[var(--border)]">✔ Conceptos Básicos</span>
+        <span class="bg-[rgba(0,0,0,0.3)] px-3 py-1.5 rounded-md border border-[var(--border)]">✔ Diferencias LAN/WAN</span>
+        <span class="bg-[rgba(0,0,0,0.3)] px-3 py-1.5 rounded-md border border-[var(--border)]">✔ Roles de Dispositivos</span>
+      </div>
+
+      <a href="juego.html" class="btn-primary btn-game">
+        Iniciar Juego
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+// Scroll Reveal Observer
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Live Network Simulator Stats (Hero Right Box)
+if (document.getElementById('stat-nodes')) {
+  setInterval(() => {
+    // Generar pequeñas fluctuaciones para simular tráfico de red vivo
+    const packets = Math.floor(Math.random() * (190 - 120) + 120);
+    const latency = Math.floor(Math.random() * (19 - 11) + 11);
+    document.getElementById('stat-packets').innerText = packets;
+    document.getElementById('stat-latency').innerHTML = `${latency}<span class="text-base">ms</span>`;
+  }, 2000);
+}
+
+// Background Particle Network Canvas Animation
+const canvas = document.getElementById('network-canvas');
+const ctx = canvas.getContext('2d');
+
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+});
+
+const particles = [];
+const particleCount = 45;
+
+class Particle {
+  constructor() {
+    this.x = Math.random() * width;
+    this.y = Math.random() * height;
+    this.vx = (Math.random() - 0.5) * 0.6;
+    this.vy = (Math.random() - 0.5) * 0.6;
+    this.radius = Math.random() * 2 + 1.5;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > width) this.vx *= -1;
+    if (this.y < 0 || this.y > height) this.vy *= -1;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 212, 255, 0.4)';
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < particleCount; i++) {
+  particles.push(new Particle());
+}
+
+function animateNetwork() {
+  ctx.clearRect(0, 0, width, height);
+  
+  // Dibujar líneas de interconexión (Enlaces)
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+      if (dist < 130) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(0, 212, 255, ${0.15 * (1 - dist / 130)})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Actualizar partículas (Nodos)
+  particles.forEach(p => {
+    p.update();
+    p.draw();
+  });
+
+  requestAnimationFrame(animateNetwork);
+}
+
+animateNetwork();
+</script>
+
+</body>
+</html>
