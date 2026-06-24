@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Juegos de Redes</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #app-container {
+            background-color: #1e293b;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border: 2px solid #334155;
+        }
+        h1 { color: #38bdf8; margin-top: 0; }
+        h2 { color: #f59e0b; }
+        p { color: #cbd5e1; line-height: 1.4; font-size: 0.9em; }
+        .btn {
+            background-color: #3b82f6;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        .btn:hover { background-color: #2563eb; transform: translateY(-2px); }
+        .btn:disabled { cursor: not-allowed; opacity: 0.6; transform: none; }
+        .btn-back { background-color: #64748b; margin-top: 10px; width: 100%; }
+        .btn-back:hover { background-color: #475569; }
+        .btn-restart { background-color: #dc2626; width: 100%; margin-bottom: 10px;}
+        .btn-restart:hover { background-color: #b91c1c; }
+        .btn-home { background-color: #10b981; width: 100%; margin-top: 20px; font-size: 1.1em; }
+        .btn-home:hover { background-color: #059669; }
+        
+        /* Indicador de Niveles */
+        .level-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; }
+        .dot { width: 12px; height: 12px; background-color: #334155; border-radius: 50%; transition: 0.3s; }
+        .dot.active { background-color: #38bdf8; box-shadow: 0 0 8px #38bdf8; transform: scale(1.2); }
+
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .menu-card { background: #334155; padding: 20px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .menu-card:hover { background: #475569; transform: scale(1.05); }
+        .menu-card h3 { margin: 0; color: #38bdf8; font-size: 1.2em; }
+        .menu-card p { font-size: 0.8em; color: #cbd5e1; margin: 5px 0 0 0; }
+        .menu-card.full-width { grid-column: span 2; background: #3b82f6; }
+        .menu-card.full-width h3 { color: #fff; }
+        .menu-card.full-width p { color: #e0e7ff; }
+
+        #trivia-progress-bar-container { width: 100%; height: 8px; background-color: #0f172a; border-radius: 4px; margin: 15px 0; overflow: hidden; }
+        #trivia-progress-bar { height: 100%; width: 0%; background-color: #e94560; transition: width 0.4s ease; }
+        #trivia-scenario { font-size: 1.2em; min-height: 70px; display: flex; align-items: center; justify-content: center; background: #0f172a; padding: 15px; border-radius: 8px; border-left: 5px solid #38bdf8; margin-bottom: 15px; }
+        .trivia-btn { background-color: #533483; }
+        .trivia-btn:not(:disabled):hover { background-color: #6a44a0; }
+        .trivia-btn.correct { background-color: #16a34a; animation: pop 0.3s; }
+        .trivia-btn.wrong { background-color: #dc2626; animation: shake 0.4s; }
+        #trivia-feedback-box { margin-top: 15px; background: #112240; padding: 15px; border-radius: 8px; text-align: left; display: none; }
+        #trivia-feedback-title { font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }
+        #trivia-feedback-text { color: #ccc; font-size: 0.95em; }
+        .title-correct { color: #16a34a; } .title-wrong { color: #dc2626; }
+        #trivia-continue-btn { background-color: #e94560; width: 100%; margin-top: 10px; }
+        #trivia-continue-btn:hover { background-color: #ff5a7a; }
+
+        .pan-grid { display: grid; gap: 10px; margin: 20px 0; justify-content: center; }
+        .pan-item { background: #334155; padding: 15px; font-size: 1.8em; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; aspect-ratio: 1/1; }
+        .pan-item:hover { background: #475569; }
+        .pan-correct { background: #16a34a !important; animation: pop 0.3s; }
+        .pan-wrong { background: #dc2626 !important; animation: shake 0.4s; }
+        
+        .lan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .lan-node { background: #334155; padding: 30px; font-size: 2em; border-radius: 50%; cursor: pointer; opacity: 0.5; transition: 0.2s; }
+        .lan-node.active { opacity: 1; box-shadow: 0 0 20px #f59e0b; background: #f59e0b; transform: scale(1.1); }
+        .lan-node:hover { opacity: 0.8; }
+
+        .wifi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: #0f172a; border: 5px solid #0f172a; margin: 0 auto 20px auto; width: fit-content; }
+        .wifi-cell { width: 60px; height: 60px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 1.5em; cursor: pointer; }
+        .wifi-cell:hover { background: #334155; }
+        .wifi-router { background: #2563eb !important; }
+        .wifi-wall { background: #475569; cursor: not-allowed; }
+        .wifi-device { background: #1e293b; cursor: not-allowed; }
+        .wifi-signal { background: rgba(56, 189, 248, 0.3); }
+
+        .wan-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; background: #020617; border: 5px solid #020617; margin: 0 auto 20px auto; width: fit-content; }
+        .wan-cell { width: 50px; height: 50px; background: #0f172a; display: flex; align-items: center; justify-content: center; font-size: 1.2em; cursor: pointer; }
+        .wan-cell:hover { background: #1e293b; }
+        .wan-island { background: #334155; cursor: not-allowed; }
+        .wan-storm { background: #1e293b; cursor: not-allowed; }
+        .wan-cable { background: #06b6d4 !important; box-shadow: inset 0 0 10px #0891b2; }
+
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .hide { display: none !important; }
+        .status-text { height: 30px; color: #38bdf8; font-weight: bold; margin-bottom: 10px; }
+        .btn-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- MENU -->
+        <div id="menu-screen">
+            <h1>🌐 Sala de Juegos de Redes</h1>
+            <p>Elige un juego para aprender sobre las redes:</p>
+            <div class="menu-grid">
+                <div class="menu-card full-width" onclick="showScreen('trivia-game')">
+                    <h3>🧠 Examen Final (100 Preguntas)</h3>
+                    <p>Se te asignarán 10 preguntas aleatorias de un banco de 100</p>
+                </div>
+                <div class="menu-card" onclick="showScreen('pan-game')">
+                    <h3>📱 PAN</h3>
+                    <p>Cazador de Dispositivos (5 Niveles)</p>
+                </div>
+                <div class="menu-card" onclick="showScreen('lan-game')">
+                    <h3>💻 LAN</h3>
+                    <p>Secuencia de Red (5 Niveles)</p>
+                </div>
+                <div class="menu-card" onclick="showScreen('wifi-game')">
+                    <h3>📡 WiFi</h3>
+                    <p>Coloca el Router (5 Niveles)</p>
+                </div>
+                <div class="menu-card" onclick="showScreen('wan-game')">
+                    <h3>🌍 WAN</h3>
+                    <p>Tendiendo el Cable (5 Niveles)</p>
+                </div>
+            </div>
+            <!-- Botón de Volver a Inicio -->
+            <button class="btn btn-home" onclick="window.location.href='redes.html'">Volver a Inicio 🏠</button>
+        </div>
+
+        <!-- TRIVIA GAME -->
+        <div id="trivia-game" class="hide">
+            <h2>🧠 Examen Final</h2>
+            <div id="trivia-progress-bar-container"><div id="trivia-progress-bar"></div></div>
+            <div id="trivia-score" class="status-text">Puntuación: 0 / 0</div>
+            <div id="trivia-scenario">Cargando...</div>
+            <div class="btn-grid-2" id="trivia-options">
+                <button class="btn trivia-btn" data-network="PAN">PAN</button>
+                <button class="btn trivia-btn" data-network="LAN">LAN</button>
+                <button class="btn trivia-btn" data-network="WiFi">WiFi</button>
+                <button class="btn trivia-btn" data-network="WAN">WAN</button>
+            </div>
+            <div id="trivia-feedback-box">
+                <div id="trivia-feedback-title"></div>
+                <div id="trivia-feedback-text"></div>
+            </div>
+            <button class="btn hide" id="trivia-continue-btn">Continuar ➡️</button>
+            <button class="btn btn-restart" onclick="initTrivia()">Reiniciar Examen</button>
+            <button class="btn btn-back" onclick="showScreen('menu-screen')">Volver al Menú</button>
+        </div>
+
+        <!-- PAN GAME -->
+        <div id="pan-game" class="hide">
+            <h2>📱 PAN: Cazador de Dispositivos</h2>
+            <div class="level-dots" id="pan-dots"></div>
+            <div class="status-text" id="pan-status">Nivel 1/5 | Aciertos: 0 | Errores: 0</div>
+            <p>Toca SOLO lo que pertenece a una Red de Área Personal (Bluetooth, NFC, etc.):</p>
+            <div class="pan-grid" id="pan-grid"></div>
+            <button class="btn btn-restart" onclick="restartPan()">Reiniciar Nivel</button>
+            <button class="btn btn-back" onclick="showScreen('menu-screen')">Volver al Menú</button>
+        </div>
+
+        <!-- LAN GAME -->
+        <div id="lan-game" class="hide">
+            <h2>💻 LAN: Secuencia de Red</h2>
+            <div class="level-dots" id="lan-dots"></div>
+            <div class="status-text" id="lan-status">Nivel 1/5</div>
+            <p>Observa la secuencia del Switch y repítela conectando los equipos:</p>
+            <div class="lan-grid" id="lan-grid">
+                <div class="lan-node" onclick="lanPlayerInput(0)">💻</div>
+                <div class="lan-node" onclick="lanPlayerInput(1)">🖨️</div>
+                <div class="lan-node" onclick="lanPlayerInput(2)">🖥️</div>
+                <div class="lan-node" onclick="lanPlayerInput(3)">💾</div>
+            </div>
+            <button class="btn" onclick="lanStart()" id="lan-start-btn">Iniciar Nivel 1</button>
+            <button class="btn btn-restart" onclick="restartLan()">Reiniciar Nivel</button>
+            <button class="btn btn-back" onclick="showScreen('menu-screen')">Volver al Menú</button>
+        </div>
+
+        <!-- WIFI GAME -->
+        <div id="wifi-game" class="hide">
+            <h2>📡 WiFi: Coloca el Router</h2>
+            <div class="level-dots" id="wifi-dots"></div>
+            <div class="status-text" id="wifi-status">Nivel 1/5</div>
+            <p>Haz clic en una casilla vacía para poner el Router. ¡Debe llegar a los dispositivos!</p>
+            <div class="wifi-grid" id="wifi-grid"></div>
+            <button class="btn btn-restart" onclick="restartWifi()">Reiniciar Nivel</button>
+            <button class="btn btn-back" onclick="showScreen('menu-screen')">Volver al Menú</button>
+        </div>
+
+        <!-- WAN GAME -->
+        <div id="wan-game" class="hide">
+            <h2>🌍 WAN: Tendiendo el Cable</h2>
+            <div class="level-dots" id="wan-dots"></div>
+            <div class="status-text" id="wan-status">Nivel 1/5</div>
+            <p>Conecta 🇪🇸 con 🇯🇵 tendiendo cable submarino. Evita la tormenta 🌩️.</p>
+            <div class="wan-grid" id="wan-grid"></div>
+            <button class="btn btn-restart" onclick="restartWan()">Reiniciar Nivel</button>
+            <button class="btn btn-back" onclick="showScreen('menu-screen')">Volver al Menú</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Utilidades ---
+        function showScreen(id) {
+            document.querySelectorAll('#app-container > div').forEach(div => div.classList.add('hide'));
+            document.getElementById(id).classList.remove('hide');
+            if(id === 'trivia-game') initTrivia();
+            if(id === 'pan-game') { panLevel = 1; initPan(); }
+            if(id === 'lan-game') { lanLevel = 1; initLan(); }
+            if(id === 'wifi-game') { wifiLevel = 1; initWifi(); }
+            if(id === 'wan-game') { wanLevel = 1; initWan(); }
+        }
+
+        function createDots(containerId, level) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            for(let i=1; i<=5; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'dot' + (i <= level ? ' active' : '');
+                container.appendChild(dot);
+            }
+        }
+
+        // --- BANCO DE 100 PREGUNTAS ---
+        const allTriviaQuestions = [
+            { text: "Conectas tus audífonos inalámbricos al celular por Bluetooth.", correct: "PAN", explanation: "Bluetooth es la tecnología clásica de una PAN." },
+            { text: "Pasar un archivo por AirDrop a un teléfono que está a 2 metros.", correct: "PAN", explanation: "AirDrop usa Bluetooth y WiFi de cerca, formando una PAN." },
+            { text: "Conectar un ratón inalámbrico a tu laptop.", correct: "PAN", explanation: "El ratón y la laptop forman una red personal." },
+            { text: "Sincronizar tu reloj inteligente con el teléfono.", correct: "PAN", explanation: "Los wearables usan PAN." },
+            { text: "Pagar con el celular en la terminal usando NFC.", correct: "PAN", explanation: "NFC crea una PAN de unos centímetros." },
+            { text: "Conectar el control de la consola a la consola.", correct: "PAN", explanation: "El control y la consola forman una PAN." },
+            { text: "Teclado inalámbrico conectado a la tablet.", correct: "PAN", explanation: "Dispositivos periféricos personales forman una PAN." },
+            { text: "Conectar audífonos al auto por Bluetooth.", correct: "PAN", explanation: "La red entre tu teléfono y el radio del auto es una PAN." },
+            { text: "Pasar fotos de un celular a otro tocándolos (NFC).", correct: "PAN", explanation: "NFC es el ejemplo perfecto de una PAN." },
+            { text: "Conectar una laptop a un proyector inalámbrico en la misma sala.", correct: "PAN", explanation: "La conexión directa de corto alcance es una PAN." },
+            { text: "Conectar dos computadoras en una oficina con cable de red.", correct: "LAN", explanation: "Una LAN conecta equipos en una oficina." },
+            { text: "Red de computadoras en un cibercafé.", correct: "LAN", explanation: "Los cibercafés usan una LAN." },
+            { text: "Todas las PCs de un laboratorio escolar conectadas por cable.", correct: "LAN", explanation: "El colegio tiene una LAN." },
+            { text: "Imprimir desde tu PC a la impresora de la oficina por cable de red.", correct: "LAN", explanation: "Las impresoras de red se conectan a la LAN." },
+            { text: "Compartir carpetas entre computadoras de la misma casa.", correct: "LAN", explanation: "La red local de tu casa es una LAN." },
+            { text: "Conectar un servidor a los switches de la empresa.", correct: "LAN", explanation: "Los servidores locales forman parte de la LAN." },
+            { text: "Conectar 4 consolas de videojuegos en una sala para jugar juntas.", correct: "LAN", explanation: "Las LAN parties son el ejemplo clásico de LAN." },
+            { text: "Cámaras de seguridad de un edificio conectadas por cable Ethernet.", correct: "LAN", explanation: "Las cámaras IP se conectan a la LAN." },
+            { text: "Red de cajas registradoras de un supermercado.", correct: "LAN", explanation: "Las cajas están conectadas en red local (LAN)." },
+            { text: "Conectar tu PC al router de tu casa con cable de red.", correct: "LAN", explanation: "La conexión cableada a tu router forma parte de tu LAN." },
+            { text: "Conectar tu celular a la red del café sin cables.", correct: "WiFi", explanation: "WiFi es la tecnología inalámbrica para conectarse a una LAN." },
+            { text: "Navegar en internet en casa usando la señal del router.", correct: "WiFi", explanation: "Estás usando WiFi para conectar tu dispositivo." },
+            { text: "Ver Netflix en la Smart TV sin cable de red.", correct: "WiFi", explanation: "La TV se conecta al router vía WiFi." },
+            { text: "Conectarse a internet en un aeropuerto sin cables.", correct: "WiFi", explanation: "El aeropuerto ofrece una red WiFi pública." },
+            { text: "Imprimir desde la laptop a una impresora inalámbrica en casa.", correct: "WiFi", explanation: "Ambos dispositivos usan WiFi para comunicarse en la LAN." },
+            { text: "Usar el celular como punto de acceso para la laptop.", correct: "WiFi", explanation: "El celular crea una pequeña red WiFi." },
+            { text: "Conectar una tablet a internet en la biblioteca.", correct: "WiFi", explanation: "La biblioteca provee WiFi." },
+            { text: "Descargar un libro en un Kindle conectado a tu red de casa.", correct: "WiFi", explanation: "El Kindle usa WiFi para descargar datos." },
+            { text: "Conectar un termostato inteligente a internet.", correct: "WiFi", explanation: "Los dispositivos del hogar inteligente usan WiFi." },
+            { text: "Jugar online con la consola usando la red del hotel.", correct: "WiFi", explanation: "La consola se conecta sin cables usando WiFi." },
+            { text: "Internet global que conecta continentes.", correct: "WAN", explanation: "Internet es la WAN más grande del mundo." },
+            { text: "Conectar la sucursal de España con la de Japón.", correct: "WAN", explanation: "Las redes empresariales que cruzan países son WAN." },
+            { text: "Cajeros automáticos de un banco conectados a nivel nacional.", correct: "WAN", explanation: "Los cajeros usan una WAN para verificar datos." },
+            { text: "Acceder a una página web alojada en otro país.", correct: "WAN", explanation: "Al acceder a servidores lejanos, usas la WAN." },
+            { text: "Conectar dos routers de diferentes ciudades con fibra óptica.", correct: "WAN", explanation: "La fibra interurbana forma parte de la WAN." },
+            { text: "Red de una multinacional con sede en varios países.", correct: "WAN", explanation: "Es una Red de Área Amplia (WAN)." },
+            { text: "Sistema de reservas de vuelos de una aerolínea global.", correct: "WAN", explanation: "Conecta aeropuertos de todo el mundo, es una WAN." },
+            { text: "Ver un video de YouTube alojado en servidores de EE.UU.", correct: "WAN", explanation: "El video viaja por la WAN hasta tu pantalla." },
+            { text: "Hacer una videollamada a un familiar en otro continente.", correct: "WAN", explanation: "La conexión entre continentes se hace gracias a la WAN." },
+            { text: "Red de satélites que dan internet a zonas rurales.", correct: "WAN", explanation: "Los satélites crean una WAN para abarcar grandes áreas." },
+            { text: "Conectar unos auriculares de realidad virtual a la PC.", correct: "PAN", explanation: "La conexión directa de periféricos es una PAN." },
+            { text: "Pasar un contacto a otro teléfono por Bluetooth.", correct: "PAN", explanation: "Bluetooth forma una Red de Área Personal." },
+            { text: "Conectar un mando a la PC para jugar.", correct: "PAN", explanation: "Los mandos y la PC forman una PAN." },
+            { text: "Usar un reloj deportivo para medir el ritmo y pasarlo al móvil.", correct: "PAN", explanation: "Es una red personal de dispositivos cercanos." },
+            { text: "Cobrar con una tarjeta por contacto (datáfono).", correct: "PAN", explanation: "El datáfono y la tarjeta usan NFC, una micro-PAN." },
+            { text: "Conectar dos tabletas para compartir pantalla.", correct: "PAN", explanation: "Conexión directa de corto alcance, por lo tanto PAN." },
+            { text: "Sincronizar la alarma de tu teléfono con un altavoz inteligente.", correct: "PAN", explanation: "Bluetooth o conexión cercana es PAN." },
+            { text: "Usar un lápiz óptico digital conectado a la tablet.", correct: "PAN", explanation: "Periférico personal conectado en área cercana." },
+            { text: "Un monitor de bebés que se conecta a tu cámara.", correct: "PAN", explanation: "Es una red de área personal entre la cámara y el receptor." },
+            { text: "Conectar el riel de carga del teléfono a la base inalámbrica.", correct: "PAN", explanation: "La carga inalámbrica usa NFC/PAN para comunicarse." },
+            { text: "Cablear todos los pisos de un edificio de oficinas.", correct: "LAN", explanation: "Un edificio entero usa una LAN." },
+            { text: "Compartir una carpeta en la red de tu casa para ver películas en la TV.", correct: "LAN", explanation: "Estás usando la LAN de tu hogar." },
+            { text: "Conectar varios monitores a una sola PC en un puesto de trabajo.", correct: "LAN", explanation: "Aunque es un usuario, si es por red, es LAN." },
+            { text: "Red interna de un hospital para compartir historias clínicas.", correct: "LAN", explanation: "La red interna del hospital es una LAN." },
+            { text: "Conectar un NAS (disco duro de red) a tu router de casa.", correct: "LAN", explanation: "Un NAS vive en tu LAN local." },
+            { text: "Conectar 20 computadoras en un salón de clases con cables.", correct: "LAN", explanation: "Un salón de clases usa una LAN." },
+            { text: "Red de un pequeño taller mecánico para conectar sus PCs.", correct: "LAN", explanation: "Una pequeña oficina/taller tiene una LAN." },
+            { text: "Sincronizar 5 cajas registradoras en una cafetería.", correct: "LAN", explanation: "Las cajas comparten una red de área local." },
+            { text: "Conectar la PC de recepción a la del gerente por cable.", correct: "LAN", explanation: "Conexión cableada en un edificio es LAN." },
+            { text: "Una red de sensores en una fábrica conectados por Ethernet.", correct: "LAN", explanation: "Red local industrial (LAN)." },
+            { text: "Conectarse al WiFi de un tren de alta velocidad.", correct: "WiFi", explanation: "El tren provee una red WiFi a los pasajeros." },
+            { text: "Descargar una app en tu celular desde la red de tu casa.", correct: "WiFi", explanation: "El teléfono usa WiFi para bajar la app." },
+            { text: "Conectar un Echo Dot de Amazon a internet.", correct: "WiFi", explanation: "Los altavoces inteligentes necesitan WiFi." },
+            { text: "Usar una webcam inalámbrica para vigilar tu bebé desde la sala.", correct: "WiFi", explanation: "Las cámaras IP usan WiFi para mandar el video." },
+            { text: "Conectar una Chromebook en la escuela.", correct: "WiFi", explanation: "Las escuelas usan redes WiFi para los alumnos." },
+            { text: "Ver la cámara del timbre inteligente en tu teléfono.", correct: "WiFi", explanation: "Los timbres inteligentes envían el video por WiFi." },
+            { text: "Descargar un juego en la Nintendo Switch en casa.", correct: "WiFi", explanation: "La consola usa WiFi para conectarse a internet." },
+            { text: "Usar un repetidor de señal para ampliar el internet en el jardín.", correct: "WiFi", explanation: "El repetidor amplía la red WiFi." },
+            { text: "Enviar un documento a imprimir desde el sofá.", correct: "WiFi", explanation: "Conexión inalámbrica a la impresora mediante WiFi." },
+            { text: "Controlar el aire acondicionado desde el celular.", correct: "WiFi", explanation: "Los aires acondicionados inteligentes usan WiFi." },
+            { text: "Enviar un correo a un amigo que está de viaje en otro país.", correct: "WAN", explanation: "El correo cruza fronteras usando la WAN." },
+            { text: "Conectar la sede de Nueva York con la de Londres.", correct: "WAN", explanation: "Conexión internacional, es una WAN." },
+            { text: "Hacer una transferencia bancaria a otra cuenta en otro banco.", correct: "WAN", explanation: "Los bancos se comunican usando una WAN." },
+            { text: "Un sistema de seguimiento de paquetes de DHL a nivel mundial.", correct: "WAN", explanation: "La red global de logística es una WAN." },
+            { text: "Conectar varias bases militares de un país.", correct: "WAN", explanation: "Conexión de áreas amplias, es una WAN." },
+            { text: "Subir un video a TikTok para que lo vea el mundo.", correct: "WAN", explanation: "Estás usando la WAN para subir el archivo." },
+            { text: "Conectar una boya oceanográfica en medio del Atlántico a internet.", correct: "WAN", explanation: "Usa satélites (WAN) para mandar los datos." },
+            { text: "Ver una transmisión en vivo de la NASA desde Marte.", correct: "WAN", explanation: "El Deep Space Network es una gigantesca WAN." },
+            { text: "Conectar los cajeros de un casino en Las Vegas con la central.", correct: "WAN", explanation: "Conexión a larga distancia, WAN." },
+            { text: "Usar un VPN para conectarte a la red de tu oficina desde tu casa.", correct: "WAN", explanation: "Un VPN sobre internet físicamente es una WAN." },
+            { text: "Un trader comprando acciones en la bolsa de Tokio desde México.", correct: "WAN", explanation: "Conexión internacional financiera, WAN." },
+            { text: "Descargar un parche de un juego desde servidores en Corea del Sur.", correct: "WAN", explanation: "La descarga viene de otro país por la WAN." },
+            { text: "Un sistema de riego agrícola controlado por satélite.", correct: "WAN", explanation: "El satélite provee conexión WAN." },
+            { text: "Conectar la estación espacial internacional con Houston.", correct: "WAN", explanation: "Conexión de áreas extremadamente amplias (WAN)." },
+            { text: "Hacer una llamada por WhatsApp a alguien en otro continente.", correct: "WAN", explanation: "La llamada viaja por la WAN global." },
+            { text: "Conectar unos gafas inteligentes a tu teléfono.", correct: "PAN", explanation: "Los periféricos personales usan PAN." },
+            { text: "Usar un microondos inteligente controlado por app desde la cocina.", correct: "WiFi", explanation: "Los electrodomésticos inteligentes usan WiFi." },
+            { text: "Red de computadoras en un barco de crucero para los pasajeros.", correct: "LAN", explanation: "La red interna del barco es una LAN." },
+            { text: "Conectar un escáner médico directamente a la computadora del médico.", correct: "PAN", explanation: "Conexión directa de equipo periférico, PAN." },
+            { text: "Un sistema de cámaras de tráfico en una ciudad entera.", correct: "WAN", explanation: "Conexión metropolitana/nacional, es una WAN." },
+            { text: "Pasar la música de tu celular al radio del auto por Bluetooth.", correct: "PAN", explanation: "Conexión Bluetooth de corto alcance, PAN." },
+            { text: "Conectar todos los cuarto de un hotel mediante cables coaxiales.", correct: "LAN", explanation: "La infraestructura del hotel es una LAN." },
+            { text: "Usar Alexa para encender las luces de tu cuarto.", correct: "WiFi", explanation: "El dispositivo inteligente usa WiFi." },
+            { text: "Conectar la bomba de combustible con el servidor de la estación.", correct: "LAN", explanation: "La red local de la gasolinera es una LAN." },
+            { text: "Ver una cámara de seguridad en España desde tu celular en México.", correct: "WAN", explanation: "Conexión intercontinental, WAN." },
+            { text: "Usar un USB conectado a tu router para compartir archivos.", correct: "LAN", explanation: "El USB se comparte a través de tu LAN." },
+            { text: "Conectar un ratón al portátil mediante un receptor USB inalámbrico.", correct: "PAN", explanation: "Receptor y ratón forman una PAN." },
+            { text: "Descargar una película en el celular usando la red del metro.", correct: "WiFi", explanation: "El metro provee WiFi a los usuarios." },
+            { text: "Sincronizar datos entre dos servidores de la misma sala.", correct: "LAN", explanation: "Servidores en la misma sala usan LAN." },
+            { text: "Un sistema de peaje electrónico que cobra en varias provincias.", correct: "WAN", explanation: "Conexión estatal/provincial, WAN." },
+            { text: "Conectar el timbre de tu casa a tu teléfono inteligente.", correct: "WiFi", explanation: "Los timbres inteligentes usan WiFi." },
+            { text: "Pasar archivos entre dos PC con un cable USB directo.", correct: "PAN", explanation: "Conexión directa entre dos PCs, PAN." },
+            { text: "Imprimir desde un cibercafé a su impresora compartida.", correct: "LAN", explanation: "La red interna del cibercafé es LAN." }
+        ];
+
+        // --- JUEGO 1: TRIVIA ---
+        let triviaQuestions = [], triviaIndex = 0, triviaScore = 0, triviaAnswered = false;
+        function initTrivia() {
+            triviaQuestions = [...allTriviaQuestions].sort(() => Math.random() - 0.5).slice(0, 10);
+            triviaIndex = 0; triviaScore = 0; triviaAnswered = false;
+            document.getElementById('trivia-continue-btn').classList.add('hide');
+            document.getElementById('trivia-feedback-box').style.display = 'none';
+            document.getElementById('trivia-options').classList.remove('hide');
+            showTriviaScenario();
+        }
+        function showTriviaScenario() {
+            triviaAnswered = false;
+            document.getElementById('trivia-feedback-box').style.display = 'none';
+            document.getElementById('trivia-continue-btn').classList.add('hide');
+            if (triviaIndex >= triviaQuestions.length) { endTrivia(); return; }
+            let progress = (triviaIndex / triviaQuestions.length) * 100;
+            document.getElementById('trivia-progress-bar').style.width = `${progress}%`;
+            document.getElementById('trivia-score').innerText = `Pregunta ${triviaIndex + 1} de ${triviaQuestions.length} | Aciertos: ${triviaScore}`;
+            document.getElementById('trivia-scenario').innerText = triviaQuestions[triviaIndex].text;
+            document.querySelectorAll('.trivia-btn').forEach(btn => { btn.classList.remove('correct', 'wrong'); btn.disabled = false; });
+        }
+        document.querySelectorAll('.trivia-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if(triviaAnswered) return;
+                triviaAnswered = true;
+                document.querySelectorAll('.trivia-btn').forEach(b => b.disabled = true);
+                const selected = e.target.dataset.network, correct = triviaQuestions[triviaIndex].correct;
+                document.getElementById('trivia-feedback-box').style.display = 'block';
+                if (selected === correct) {
+                    e.target.classList.add('correct'); triviaScore++;
+                    document.getElementById('trivia-feedback-title').innerText = "✅ ¡Correcto!"; document.getElementById('trivia-feedback-title').className = "title-correct";
+                } else {
+                    e.target.classList.add('wrong');
+                    document.querySelectorAll('.trivia-btn').forEach(b => { if(b.dataset.network === correct) b.classList.add('correct'); });
+                    document.getElementById('trivia-feedback-title').innerText = "❌ Incorrecto."; document.getElementById('trivia-feedback-title').className = "title-wrong";
+                }
+                document.getElementById('trivia-feedback-text').innerText = triviaQuestions[triviaIndex].explanation;
+                document.getElementById('trivia-continue-btn').classList.remove('hide');
+            });
+        });
+        document.getElementById('trivia-continue-btn').addEventListener('click', () => { triviaIndex++; showTriviaScenario(); });
+        function endTrivia() {
+            document.getElementById('trivia-progress-bar').style.width = `100%`;
+            document.getElementById('trivia-scenario').innerText = `🏁 Examen Completado 🏁`;
+            let msg = triviaScore === triviaQuestions.length ? "¡Perfecto! Sabes de redes." : triviaScore >= triviaQuestions.length / 2 ? "¡Buen trabajo!" : "Sigue practicando.";
+            document.getElementById('trivia-feedback-title').innerText = `Puntuación Final: ${triviaScore} / ${triviaQuestions.length}`;
+            document.getElementById('trivia-feedback-title').className = "title-correct";
+            document.getElementById('trivia-feedback-text').innerText = msg;
+            document.getElementById('trivia-feedback-box').style.display = 'block';
+            document.getElementById('trivia-options').classList.add('hide');
+            document.getElementById('trivia-continue-btn').classList.add('hide');
+        }
+
+        // --- JUEGO 2: PAN (5 Niveles) ---
+        let panLevel = 1, panScore = 0, panErrors = 0, panTarget = 0;
+        const panConfigs = [
+            {cols: 3, items: 6, target: 2}, {cols: 3, items: 9, target: 3}, 
+            {cols: 4, items: 12, target: 4}, {cols: 4, items: 16, target: 5}, {cols: 5, items: 20, target: 6}
+        ];
+        const panTrue = ['🎧','⌚','🖱️','⌨️','🎮','💳','📱','🖨️'];
+        const panFalse = ['🏢','🛰️','🌐','🏙️','🚗','🏥','🏦','🌍','🚀','🚜'];
+
+        function initPan() {
+            panScore = 0; panErrors = 0;
+            createDots('pan-dots', panLevel);
+            const cfg = panConfigs[panLevel - 1];
+            panTarget = cfg.target;
+            document.getElementById('pan-status').innerText = `Nivel ${panLevel}/5 | Aciertos: 0 | Errores: 0`;
+            const grid = document.getElementById('pan-grid');
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${cfg.cols}, 1fr)`;
+            let items = [];
+            for(let i=0; i<cfg.target; i++) items.push({icon: panTrue[Math.floor(Math.random()*panTrue.length)], isPan: true});
+            for(let i=0; i<cfg.items - cfg.target; i++) items.push({icon: panFalse[Math.floor(Math.random()*panFalse.length)], isPan: false});
+            items.sort(() => Math.random() - 0.5);
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'pan-item'; div.innerText = item.icon;
+                div.onclick = () => {
+                    if(div.classList.contains('pan-correct') || div.classList.contains('pan-wrong')) return;
+                    if(item.isPan) { div.classList.add('pan-correct'); panScore++; } 
+                    else { div.classList.add('pan-wrong'); panErrors++; }
+                    document.getElementById('pan-status').innerText = `Nivel ${panLevel}/5 | Aciertos: ${panScore} | Errores: ${panErrors}`;
+                    if(panScore === panTarget) {
+                        if(panLevel < 5) {
+                            document.getElementById('pan-status').innerText = `¡NIVEL ${panLevel} COMPLETADO! Cargando nivel ${panLevel+1}...`;
+                            setTimeout(() => { panLevel++; initPan(); }, 1500);
+                        } else { alert("¡Maestro PAN! Completaste los 5 niveles."); panLevel = 1; showScreen('menu-screen'); }
+                    }
+                };
+                grid.appendChild(div);
+            });
+        }
+        function restartPan() { initPan(); }
+
+        // --- JUEGO 3: LAN (5 Niveles) ---
+        let lanLevel = 1, lanSequence = [], lanPlayerSequence = [], lanCanClick = false;
+        function initLan() {
+            lanLevel = 1; lanSequence = []; lanCanClick = false;
+            createDots('lan-dots', lanLevel);
+            document.getElementById('lan-start-btn').innerText = `Iniciar Nivel ${lanLevel}`;
+            document.getElementById('lan-start-btn').classList.remove('hide');
+            document.getElementById('lan-status').innerText = `Nivel ${lanLevel}/5. Presiona Iniciar.`;
+        }
+        function restartLan() {
+            lanSequence = []; lanPlayerSequence = []; lanCanClick = false;
+            createDots('lan-dots', lanLevel);
+            document.getElementById('lan-start-btn').innerText = `Reiniciar Nivel ${lanLevel}`;
+            document.getElementById('lan-start-btn').classList.remove('hide');
+            document.getElementById('lan-status').innerText = `Nivel ${lanLevel}/5. Presiona Iniciar.`;
+        }
+        function lanStart() {
+            document.getElementById('lan-start-btn').classList.add('hide');
+            lanNextRound();
+        }
+        function lanNextRound() {
+            lanPlayerSequence = []; lanCanClick = false;
+            let len = lanLevel + 1; 
+            lanSequence = [];
+            for(let i=0; i<len; i++) lanSequence.push(Math.floor(Math.random() * 4));
+            document.getElementById('lan-status').innerText = `Nivel ${lanLevel}/5. Observa...`;
+            let i = 0;
+            const interval = setInterval(() => {
+                if(i >= lanSequence.length) {
+                    clearInterval(interval); lanCanClick = true;
+                    document.getElementById('lan-status').innerText = `Nivel ${lanLevel}/5. ¡Tu turno!`;
+                    return;
+                }
+                lanFlash(lanSequence[i]); i++;
+            }, 700);
+        }
+        function lanFlash(index) {
+            const nodes = document.querySelectorAll('.lan-node');
+            nodes[index].classList.add('active');
+            setTimeout(() => nodes[index].classList.remove('active'), 400);
+        }
+        function lanPlayerInput(index) {
+            if(!lanCanClick) return;
+            lanFlash(index); lanPlayerSequence.push(index);
+            const currentStep = lanPlayerSequence.length - 1;
+            if(lanPlayerSequence[currentStep] !== lanSequence[currentStep]) {
+                document.getElementById('lan-status').innerText = `¡Error! Repite el Nivel ${lanLevel}.`;
+                lanCanClick = false; restartLan(); return;
+            }
+            if(lanPlayerSequence.length === lanSequence.length) {
+                if(lanLevel < 5) {
+                    document.getElementById('lan-status').innerText = "¡Correcto! Cargando siguiente nivel...";
+                    lanCanClick = false;
+                    setTimeout(() => { lanLevel++; createDots('lan-dots', lanLevel); lanStart(); }, 1200);
+                } else {
+                    document.getElementById('lan-status').innerText = "¡Maestro LAN! Completaste los 5 niveles.";
+                    setTimeout(() => { lanLevel = 1; showScreen('menu-screen'); }, 2000);
+                }
+            }
+        }
+
+        // --- JUEGO 4: WiFi (5 Niveles) ---
+        let wifiLevel = 1;
+        const wifiMaps = [
+            [[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ','TV',' '],[' ',' ',' ','P']],
+            [[' ',' ',' ',' '],[' ','W',' ',' '],[' ',' ','TV',' '],[' ',' ',' ','P']],
+            [[' ',' ',' ',' '],[' ','W',' ','W'],[' ',' ','TV',' '],[' ',' ',' ','P']],
+            [[' ','W',' ',' '],[' ','W',' ',' '],[' ',' ','TV','W'],[' ',' ',' ','P']],
+            [['W',' ',' ',' '],[' ','W',' ',' '],[' ',' ','TV','W'],['W',' ',' ','P']]
+        ];
+        function initWifi() {
+            createDots('wifi-dots', wifiLevel);
+            document.getElementById('wifi-status').innerText = `Nivel ${wifiLevel}/5. Coloca el Router 📶`;
+            const map = wifiMaps[wifiLevel - 1];
+            const grid = document.getElementById('wifi-grid');
+            grid.innerHTML = '';
+            for(let r=0; r<4; r++) {
+                for(let c=0; c<4; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'wifi-cell'; cell.dataset.r = r; cell.dataset.c = c;
+                    const val = map[r][c];
+                    if(val === 'W') { cell.classList.add('wifi-wall'); cell.innerText = '🧱'; }
+                    else if(val === 'TV') { cell.classList.add('wifi-device'); cell.innerText = '📺'; }
+                    else if(val === 'P') { cell.classList.add('wifi-device'); cell.innerText = '📱'; }
+                    else { cell.onclick = wifiPlaceRouter; }
+                    grid.appendChild(cell);
+                }
+            }
+        }
+        function restartWifi() { initWifi(); }
+        function wifiPlaceRouter(e) {
+            initWifi();
+            const r = parseInt(e.target.dataset.r); const c = parseInt(e.target.dataset.c);
+            e.target.classList.add('wifi-router'); e.target.innerText = '📶';
+            let coversTV = false, coversP = false;
+            document.querySelectorAll('.wifi-cell').forEach(cell => {
+                const cr = parseInt(cell.dataset.r); const cc = parseInt(cell.dataset.c);
+                const dist = Math.abs(cr - r) + Math.abs(cc - c);
+                if(dist > 0 && dist <= 3 && !cell.classList.contains('wifi-wall')) cell.classList.add('wifi-signal');
+                if(cell.innerText === '📺' && dist <= 3) coversTV = true;
+                if(cell.innerText === '📱' && dist <= 3) coversP = true;
+            });
+            const status = document.getElementById('wifi-status');
+            if(coversTV && coversP) {
+                status.innerText = "¡ÉXITO! Nivel completado. ✅"; status.style.color = "#16a34a";
+                if(wifiLevel < 5) { setTimeout(() => { wifiLevel++; initWifi(); }, 1500); }
+                else { setTimeout(() => { alert("¡Maestro WiFi! Completaste los 5 niveles."); wifiLevel = 1; showScreen('menu-screen'); }, 1500); }
+            } else { status.innerText = "Sin cobertura total. Prueba otra ubicación. ❌"; status.style.color = "#dc2626"; }
+        }
+
+        // --- JUEGO 5: WAN (5 Niveles) ---
+        let wanLevel = 1, wanCableCount = 0;
+        const wanMaps = [
+            [['ES',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','JP']],
+            [['ES',' ',' ',' ',' ',' '],[' ',' ','S',' ',' ',' '],[' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','JP']],
+            [['ES',' ',' ',' ',' ',' '],[' ','S',' ',' ',' ',' '],[' ',' ',' ','S',' ',' '],[' ',' ',' ',' ',' ','JP']],
+            [['ES',' ',' ','S',' ',' '],[' ',' ',' ',' ',' ',' '],[' ','S',' ',' ','S',' '],[' ',' ',' ',' ',' ','JP']],
+            [['ES',' ','S',' ',' ',' '],[' ',' ',' ','S',' ',' '],[' ','S',' ',' ','S',' '],[' ',' ',' ',' ',' ','JP']]
+        ];
+        function initWan() {
+            wanCableCount = 0;
+            createDots('wan-dots', wanLevel);
+            document.getElementById('wan-status').innerText = `Nivel ${wanLevel}/5. Toca una casilla adyacente al cable azul`;
+            const map = wanMaps[wanLevel - 1];
+            const grid = document.getElementById('wan-grid');
+            grid.innerHTML = '';
+            for(let r=0; r<4; r++) {
+                for(let c=0; c<6; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'wan-cell'; cell.dataset.r = r; cell.dataset.c = c;
+                    const val = map[r][c];
+                    if(val === 'ES') { cell.classList.add('wan-island'); cell.innerText = '🇪🇸'; }
+                    else if(val === 'JP') { cell.classList.add('wan-island'); cell.innerText = '🇯🇵'; }
+                    else if(val === 'S') { cell.classList.add('wan-storm'); cell.innerText = '🌩️'; }
+                    else { cell.onclick = wanLayCable; }
+                    grid.appendChild(cell);
+                }
+            }
+        }
+        function restartWan() { initWan(); }
+        function wanLayCable(e) {
+            const r = parseInt(e.target.dataset.r); const c = parseInt(e.target.dataset.c);
+            const isAdjacent = (cr, cc) => {
+                const dirs = [[-1,0], [1,0], [0,-1], [0,1]];
+                for(const [dr, dc] of dirs) {
+                    const nr = cr + dr, nc = cc + dc;
+                    if(nr>=0 && nr<4 && nc>=0 && nc<6) {
+                        const neighbor = document.querySelector(`.wan-cell[data-r="${nr}"][data-c="${nc}"]`);
+                        if(neighbor && (neighbor.classList.contains('wan-cable') || neighbor.innerText === '🇪🇸')) return true;
+                    }
+                }
+                return false;
+            };
+            if(!isAdjacent(r, c)) { document.getElementById('wan-status').innerText = "Debes empezar desde España o continuar el cable."; return; }
+            e.target.classList.add('wan-cable'); e.target.innerText = '⚡'; wanCableCount++;
+            const dirs = [[-1,0], [1,0], [0,-1], [0,1]];
+            for(const [dr, dc] of dirs) {
+                const nr = r + dr, nc = c + dc;
+                if(nr>=0 && nr<4 && nc>=0 && nc<6) {
+                    const neighbor = document.querySelector(`.wan-cell[data-r="${nr}"][data-c="${nc}"]`);
+                    if(neighbor && neighbor.innerText === '🇯🇵') {
+                        document.getElementById('wan-status').innerText = `¡CONEXIÓN WAN ESTABLECIDA! Usaste ${wanCableCount} tramos.`;
+                        document.getElementById('wan-status').style.color = "#06b6d4";
+                        if(wanLevel < 5) { setTimeout(() => { wanLevel++; initWan(); }, 1500); }
+                        else { setTimeout(() => { alert("¡Maestro WAN! Completaste los 5 niveles."); wanLevel = 1; showScreen('menu-screen'); }, 1500); }
+                        return;
+                    }
+                }
+            }
+            document.getElementById('wan-status').innerText = `Nivel ${wanLevel}/5 | Cable tendido. Continúa. (Tramos: ${wanCableCount})`;
+        }
+    </script>
+</body>
+</html>
